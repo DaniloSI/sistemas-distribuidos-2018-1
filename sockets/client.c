@@ -8,6 +8,43 @@
 #include <unistd.h>
 
 
+void error(char *);
+
+int app_socket();
+
+void app_connect(int, int, struct hostent *);
+
+void app_write(int);
+
+void app_read(int);
+
+int main(int argc, char *argv[]) {
+    int sockfd;
+    struct hostent *server;
+
+
+    if (argc < 3) {
+       fprintf(stderr, "usage %s hostname port\n", argv[0]);
+       exit(0);
+    }
+
+    sockfd = app_socket();
+    server = gethostbyname(argv[1]);
+    
+    if (server == NULL) {
+        fprintf(stderr,"ERROR, no such host\n");
+        exit(0);
+    }
+
+    app_connect(sockfd, atoi(argv[2]), server);
+
+    app_write(sockfd);
+
+    app_read(sockfd);
+    
+    return 0;
+}
+
 void error(char *msg)
 {
     perror(msg);
@@ -65,32 +102,4 @@ void app_read(int sockfd) {
     }
 
     printf("%s\n", buffer);
-}
-
-int main(int argc, char *argv[])
-{
-    int sockfd;
-    struct hostent *server;
-
-
-    if (argc < 3) {
-       fprintf(stderr, "usage %s hostname port\n", argv[0]);
-       exit(0);
-    }
-
-    sockfd = app_socket();
-    server = gethostbyname(argv[1]);
-    
-    if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
-        exit(0);
-    }
-
-    app_connect(sockfd, atoi(argv[2]), server);
-
-    app_write(sockfd);
-
-    app_read(sockfd);
-    
-    return 0;
 }
