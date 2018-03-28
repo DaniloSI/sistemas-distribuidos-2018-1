@@ -14,13 +14,13 @@ int app_socket();
 
 void app_bind(int, int);
 
-int app_accept(int);
-
-void app_write_order(int, char);
+int app_accept(int, char);
 
 void app_read(int, char*);
 
 void app_write(int, char*);
+
+int app_finish(char*);
 
 int main(int argc, char *argv[])
 {
@@ -36,19 +36,16 @@ int main(int argc, char *argv[])
 
     app_bind(sockfd_server, atoi(argv[1]));
 
-    sockfd_client_x = app_accept(sockfd_server);
-    app_write_order(sockfd_client_x, '1');
+    sockfd_client_x = app_accept(sockfd_server, '1');
+    sockfd_client_y = app_accept(sockfd_server, '2');
 
-    sockfd_client_y = app_accept(sockfd_server);
-    app_write_order(sockfd_client_y, '2');
-
-    while (1) {
+    do {
         app_read(sockfd_client_x, buffer);
         app_write(sockfd_client_y, buffer);
 
         app_read(sockfd_client_y, buffer);
         app_write(sockfd_client_x, buffer);
-    }
+    } while (!app_finish(buffer));
     
     return 0; 
 }
@@ -58,9 +55,16 @@ void error(char *msg) {
     exit(1);
 }
 
-void finish(char *msg) {
-    printf("%s\n", msg);
-    exit(0);
+int app_finish(char *buffer) {
+    if (strlen(buffer)) {
+        char *token;
+
+        token = strtok(buffer, "\n\r");
+
+        return !strcmp(token, "bye");
+    }
+
+    return 0;
 }
 
 int app_socket() {
@@ -87,12 +91,14 @@ void app_bind(int sockfd, int portno) {
     }
 }
 
-int app_accept(int sockfd) {
+int app_accept(int sockfd, char order) {
     int clilen;
     int newsockfd;
     struct sockaddr_in cli_addr;
+    char buffer[1] = { order };
+    int n;
 
-    listen(sockfd,5);
+    listen(sockfd, 5);
 
     clilen = sizeof(cli_addr);
     newsockfd = accept(sockfd, (struct sockaddr*) &cli_addr, (unsigned int *) &clilen);
@@ -101,18 +107,13 @@ int app_accept(int sockfd) {
         error("ERROR on accept");
     }
 
-    return newsockfd;
-}
-
-void app_write_order(int sockfd, char order) {
-    int n;
-    char buffer[1] = { order };
-
-    n = write(sockfd, buffer, 1);
+    n = write(newsockfd, buffer, 1);
     
     if (n < 0) {
         error("ERROR writing to socket");
     }
+
+    return newsockfd;
 }
 
 void app_read(int sockfd, char* buffer) {
