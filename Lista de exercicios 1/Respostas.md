@@ -1,4 +1,4 @@
-QUESTÕES
+Questões
 =========
 
 
@@ -59,5 +59,5 @@ Capítulo 2
 	g. N-Camadas ?
 
 
-RESPOSTAS
+Respostas
 =========
