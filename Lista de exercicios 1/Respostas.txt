@@ -57,8 +57,8 @@ Capítulo 2
 
 RESPOSTAS
 
-1. 
-2. O papel do Middleware em Sistemas Distribuídos é fornecer transparência de distribuição de recursos, abstrair a heterogeneidade dos componentes do Sistema Distribuído e oferecer uma visão de sistema único.
-3. As metas de um Sistema Distribuído são (i) ocultar distribuição de recursos, (ii) ser aberto e (iii) poder ser expandido.
-4. (i) Exemplos de motivações para utilização de um Sistema Distribuído, relacionadas à economia:
-  1. [...]
+1) 
+2) O papel do Middleware em Sistemas Distribuídos é fornecer transparência de distribuição de recursos, abstrair a heterogeneidade dos componentes do Sistema Distribuído e oferecer uma visão de sistema único.
+3) As metas de um Sistema Distribuído são (i) ocultar distribuição de recursos, (ii) ser aberto e (iii) poder ser expandido.
+4) (i) Exemplos de motivações para utilização de um Sistema Distribuído, relacionadas à economia:
+  - [...]
