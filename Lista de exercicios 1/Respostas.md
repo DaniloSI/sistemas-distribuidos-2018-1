@@ -16,9 +16,9 @@ Capítulo 1
 9. O que é um sistema distribuído aberto e quais os benefícios que a abertura proporciona?
 10. Diferencie Interoperabilidade e Portabilidade.
 11. Com relação a Escalabilidade de um sistema distribuído:
-   1. Descreva 3 dimensões (medida de escalabilidade);
-   2. Cite 3 exemplos de limitações (problemas de escalabilidade);
-   3. Cite 3 técnicas (de escalabilidade).
+ - a) Descreva 3 dimensões (medida de escalabilidade);
+ - b) Cite 3 exemplos de limitações (problemas de escalabilidade);
+ - c) Cite 3 técnicas (de escalabilidade).
 12. Aponte os desafios (ciladas) que tornam a construção de um Sistema Distribuído mais complexa que a de um sistema convencional.
 13. Qual a diferença entre a computação Cluster e a Grid?
 14. Quais as propriedades de uma transação?
