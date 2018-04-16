@@ -50,14 +50,20 @@ Capítulo 2
 22) O que é uma arquitetura cliente-servidor de três divisões?
 23) Qual a diferença entre uma distribuição vertical e distribuição horizontal?
 24) Procure na Web e ilustre com exemplos reais sistemas com as seguintes arquiteturas:
-	a. Cliente-Servidor;
-	b. Peer-to-Peer;
-	c. Proxy Server;
-	d. Código Móvel;
-	e. Cliente Magro (Thin Client);
-	f. Agente Móvel;
-	g. N-Camadas ?
+ a. Cliente-Servidor;
+ b. Peer-to-Peer;
+ c. Proxy Server;
+ d. Código Móvel;
+ e. Cliente Magro (Thin Client);
+ f. Agente Móvel;
+ g. N-Camadas ?
 
 
 Respostas
 =========
+
+1) 
+2) O papel do Middleware em Sistemas Distribuídos é fornecer transparência de distribuição de recursos, abstrair a heterogeneidade dos componentes do Sistema Distribuído e oferecer uma visão de sistema único.
+3) As metas de um Sistema Distribuído são (i) ocultar distribuição de recursos, (ii) ser aberto e (iii) poder ser expandido.
+4) (i) Exemplos de motivações para utilização de um Sistema Distribuído, relacionadas à economia:
+	a) 
