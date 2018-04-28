@@ -1,8 +1,8 @@
 server:
-	gcc server.c -o server -lpthread -Wall -ansi -std=c99
+	gcc server.c -o server -lpthread -Wall -ansi
 
 client:
-	gcc client.c -o client -lpthread -Wall -ansi -std=c99
+	gcc client.c -o client -lpthread -Wall -ansi
 
 clean:
 	rm client server

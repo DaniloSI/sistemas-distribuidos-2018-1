@@ -5,8 +5,10 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <ctype.h>
 
 #define h_addr h_addr_list[0]
 
@@ -20,6 +22,8 @@ void app_connect(int, int, struct hostent *);
 void thread_write(int*);
 
 void thread_read(int*);
+
+int not_bye(char*, int);
 
 int main(int argc, char *argv[]) {
     int sockfd;
@@ -101,8 +105,9 @@ void thread_write(int* sockfd) {
 }
 
 int not_bye(char* msg, int len_msg) {
+    int i;
 
-    // Remove o carriage return.
+    /* Remove o carriage return. */
     if (len_msg > 0 && (msg[len_msg - 1] == '\n' || msg[len_msg - 1] == '\r')) {
         msg[len_msg - 1] = '\0';
     }
@@ -110,9 +115,9 @@ int not_bye(char* msg, int len_msg) {
     if (len_msg > 1 && msg[len_msg - 2] == '\r') {
         msg[len_msg - 2] = '\0';
     }
-    // --
+    /* -- */
 
-    for (int i = 0; i < len_msg; i++)
+    for (i = 0; i < len_msg; i++)
     {
         msg[i] = tolower(msg[i]);
     }

@@ -6,8 +6,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <ctype.h>
 
 #define N_CLIENTS 5
 
@@ -27,13 +29,16 @@ int app_accept(int);
 
 void thread_client(BagClient*);
 
+int not_bye(char*, int);
+
 int main(int argc, char *argv[])
 {
+    int i;
     pthread_t thread_clients[N_CLIENTS];
     int sockfd, sockfd_clients[N_CLIENTS];
     BagClient bag[N_CLIENTS];
 
-    for (int i = 0; i < N_CLIENTS; ++i)
+    for (i = 0; i < N_CLIENTS; ++i)
     {
         sockfd_clients[i] = -1;
     }
@@ -47,7 +52,7 @@ int main(int argc, char *argv[])
 
     app_bind(sockfd, atoi(argv[1]));
 
-    for (int i = 0; i < N_CLIENTS; i++) {
+    for (i = 0; i < N_CLIENTS; i++) {
         int newsockfd = app_accept(sockfd);
 
         sockfd_clients[i] = newsockfd;
@@ -61,7 +66,7 @@ int main(int argc, char *argv[])
         pthread_create(&thread_clients[i], NULL, (void*)thread_client, &bag[i]);
     }
 
-    for (int i = 0; i < N_CLIENTS; ++i)
+    for (i = 0; i < N_CLIENTS; ++i)
     {
         pthread_join(thread_clients[i], NULL);
     }
@@ -71,6 +76,7 @@ int main(int argc, char *argv[])
 
 void thread_client(BagClient* bag) {
     char buffer[256];
+    int i;
     char identificador_client[24];
 
     sprintf(identificador_client, "O usuario [%d] disse: ", bag->client_id);
@@ -85,7 +91,7 @@ void thread_client(BagClient* bag) {
             error("ERROR reading from socket");
         }
 
-        for (int i = 0; i < N_CLIENTS; i++)
+        for (i = 0; i < N_CLIENTS; i++)
         {
             if (bag->sockfd_clients[i] != -1 && bag->sockfd_clients[i] != bag->sockfd_client) {
                 char msg_send[280];
@@ -101,15 +107,16 @@ void thread_client(BagClient* bag) {
         }
     } while (not_bye(buffer, strlen(buffer)));
 
-    // Remove o sockfd da lista de clients.
+    /* Remove o sockfd da lista de clients. */
     bag->sockfd_clients[bag->client_id - 1] = -1;
 
     printf("Cliente desconectado: %d\n", bag->client_id);
 }
 
 int not_bye(char* msg, int len_msg) {
+    int i;
 
-    // Remove o carriage return.
+    /* Remove o carriage return. */
     if (len_msg > 0 && (msg[len_msg - 1] == '\n' || msg[len_msg - 1] == '\r')) {
         msg[len_msg - 1] = '\0';
     }
@@ -117,9 +124,9 @@ int not_bye(char* msg, int len_msg) {
     if (len_msg > 1 && msg[len_msg - 2] == '\r') {
         msg[len_msg - 2] = '\0';
     }
-    // --
+    /* -- */
 
-    for (int i = 0; i < len_msg; i++)
+    for (i = 0; i < len_msg; i++)
     {
         msg[i] = tolower(msg[i]);
     }
