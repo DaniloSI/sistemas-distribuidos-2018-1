@@ -9,8 +9,18 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <ctype.h>
+#include <signal.h>
 
 #define h_addr h_addr_list[0]
+
+#define N_THREADS 2
+
+typedef struct app_client_info {
+    pthread_t threads[N_THREADS];
+    int sockfd;
+} AppClientInfo;
+
+AppClientInfo appClientInfo;
 
 
 void error(char *);
@@ -25,10 +35,10 @@ void thread_read(int*);
 
 int not_bye(char*, int);
 
+void close_connection(int);
+
 int main(int argc, char *argv[]) {
-    int sockfd;
     struct hostent *server;
-    pthread_t th_read, th_write;
 
 
     if (argc < 3) {
@@ -36,7 +46,7 @@ int main(int argc, char *argv[]) {
        exit(0);
     }
 
-    sockfd = app_socket();
+    appClientInfo.sockfd = app_socket();
     server = gethostbyname(argv[1]);
     
     if (server == NULL) {
@@ -44,16 +54,32 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    app_connect(sockfd, atoi(argv[2]), server);
+    app_connect(appClientInfo.sockfd, atoi(argv[2]), server);
 
-    pthread_create(&th_write, NULL, (void*)thread_write, &sockfd);
-    pthread_create(&th_read, NULL, (void*)thread_read, &sockfd);
+    pthread_create(&appClientInfo.threads[0], NULL, (void*)thread_write, &appClientInfo.sockfd);
+    pthread_create(&appClientInfo.threads[1], NULL, (void*)thread_read, &appClientInfo.sockfd);
 
-    pthread_join(th_write, NULL);
-    pthread_cancel(th_read);
-    pthread_join(th_read, NULL);
+    signal(SIGINT, close_connection);
+
+    pthread_join(appClientInfo.threads[0], NULL);
+    pthread_cancel(appClientInfo.threads[1]);
+    pthread_join(appClientInfo.threads[1], NULL);
     
     return 0;
+}
+
+void close_connection(int sinal) {
+    char* bye = "bye";
+    printf("\n\nControl + C pressionado.\nFechando conexao com o servidor...\n");
+
+    if (write(appClientInfo.sockfd, bye, strlen(bye)) < 0) {
+        printf("Erro ao fechar a conexao no servidor.\n");
+    }
+
+    printf("Fechando conexao local...\n");
+
+    pthread_cancel(appClientInfo.threads[0]);
+    pthread_cancel(appClientInfo.threads[1]);
 }
 
 void error(char *msg)
