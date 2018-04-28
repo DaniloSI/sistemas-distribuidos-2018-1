@@ -40,7 +40,6 @@ void close_connection(int);
 int main(int argc, char *argv[]) {
     struct hostent *server;
 
-
     if (argc < 3) {
        fprintf(stderr, "usage %s hostname port\n", argv[0]);
        exit(0);
@@ -60,6 +59,7 @@ int main(int argc, char *argv[]) {
     pthread_create(&appClientInfo.threads[1], NULL, (void*)thread_read, &appClientInfo.sockfd);
 
     signal(SIGINT, close_connection);
+    signal(SIGTERM, close_connection);
 
     pthread_join(appClientInfo.threads[0], NULL);
     pthread_cancel(appClientInfo.threads[1]);
@@ -70,16 +70,24 @@ int main(int argc, char *argv[]) {
 
 void close_connection(int sinal) {
     char* bye = "bye";
-    printf("\n\nControl + C pressionado.\nFechando conexao com o servidor...\n");
 
-    if (write(appClientInfo.sockfd, bye, strlen(bye)) < 0) {
-        printf("Erro ao fechar a conexao no servidor.\n");
+    if (sinal == SIGINT) {
+        printf("\n\nControl + C pressionado.\n");
+        printf("Fechando conexao com o servidor...\n");
+
+        if (write(appClientInfo.sockfd, bye, strlen(bye)) < 0) {
+            printf("Erro ao fechar a conexao no servidor.\n");
+        }
     }
 
     printf("Fechando conexao local...\n");
 
     pthread_cancel(appClientInfo.threads[0]);
     pthread_cancel(appClientInfo.threads[1]);
+
+    close(appClientInfo.sockfd);
+
+    exit(0);
 }
 
 void error(char *msg)
@@ -163,6 +171,11 @@ void thread_read(int* sockfd) {
             error("ERROR reading from socket");
         }
 
-        printf("\n\n%s\n\n", buffer);
+        if (!strcmp(buffer, "server-close-connection")) {
+            printf("\nComando para fechar recebido do servidor.\n");
+            close_connection(SIGTERM);
+        } else {
+            printf("\n\n%s\n\n", buffer);
+        }
     }
 }

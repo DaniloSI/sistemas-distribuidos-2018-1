@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <ctype.h>
+#include <signal.h>
 
 #define N_CLIENTS 5
 
@@ -18,6 +19,14 @@ typedef struct bag_client {
     int client_id;
     int sockfd_client;
 } BagClient;
+
+typedef struct AppServerInfo {
+    pthread_t thread_clients[N_CLIENTS];
+    int sockfd_server, sockfd_clients[N_CLIENTS];
+    BagClient bag[N_CLIENTS];
+} AppServerInfo;
+
+AppServerInfo appServerInfo;
 
 void error(char*);
 
@@ -31,47 +40,66 @@ void thread_client(BagClient*);
 
 int not_bye(char*, int);
 
+void fechar_sockets(int);
+
 int main(int argc, char *argv[])
 {
     int i;
-    pthread_t thread_clients[N_CLIENTS];
-    int sockfd, sockfd_clients[N_CLIENTS];
-    BagClient bag[N_CLIENTS];
-
-    for (i = 0; i < N_CLIENTS; ++i)
-    {
-        sockfd_clients[i] = -1;
-    }
 
     if (argc < 2) {
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
     }
 
-    sockfd = app_socket();
+    appServerInfo.sockfd_server = app_socket();
 
-    app_bind(sockfd, atoi(argv[1]));
+    app_bind(appServerInfo.sockfd_server, atoi(argv[1]));
+
+    for (i = 0; i < N_CLIENTS; ++i)
+    {
+        appServerInfo.sockfd_clients[i] = -1;
+    }
+
+    signal(SIGINT, fechar_sockets);
 
     for (i = 0; i < N_CLIENTS; i++) {
-        int newsockfd = app_accept(sockfd);
+        int newsockfd = app_accept(appServerInfo.sockfd_server);
 
-        sockfd_clients[i] = newsockfd;
+        appServerInfo.sockfd_clients[i] = newsockfd;
 
-        bag[i].sockfd_clients = sockfd_clients;
-        bag[i].sockfd_client = sockfd_clients[i];
-        bag[i].client_id = i + 1;
+        appServerInfo.bag[i].sockfd_clients = appServerInfo.sockfd_clients;
+        appServerInfo.bag[i].sockfd_client = appServerInfo.sockfd_clients[i];
+        appServerInfo.bag[i].client_id = i + 1;
 
-        printf("Cliente conectado: %d\n", bag[i].client_id);
+        printf("Cliente conectado: %d\n", appServerInfo.bag[i].client_id);
 
-        pthread_create(&thread_clients[i], NULL, (void*)thread_client, &bag[i]);
+        pthread_create(&appServerInfo.thread_clients[i], NULL, (void*)thread_client, &appServerInfo.bag[i]);
     }
 
     for (i = 0; i < N_CLIENTS; ++i)
     {
-        pthread_join(thread_clients[i], NULL);
+        pthread_join(appServerInfo.thread_clients[i], NULL);
     }
     
     return 0; 
+}
+
+void fechar_sockets(int sinal) {
+    int i;
+    char* close_connection = "server-close-connection";
+
+    for (i = 0; i < N_CLIENTS; ++i)
+    {
+        if (appServerInfo.sockfd_clients[i] != -1) {
+            printf("\nEnviando mensagem para o cliente [%d] ser fechado.\n", i);
+            if (write(appServerInfo.bag->sockfd_clients[i], close_connection, strlen(close_connection)) < 0) {
+                printf("Falha ao fechar a conexao do cliente de sockfd: [%d].\n", appServerInfo.bag->sockfd_clients[i]);
+            }
+        }
+    }
+
+    close(appServerInfo.sockfd_server);
+    exit(0);
 }
 
 void thread_client(BagClient* bag) {
