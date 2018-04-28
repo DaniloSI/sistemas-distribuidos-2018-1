@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     pthread_create(&th_read, NULL, (void*)thread_read, &sockfd);
 
     pthread_join(th_write, NULL);
+    pthread_cancel(th_read);
     pthread_join(th_read, NULL);
     
     return 0;
@@ -85,20 +86,38 @@ void thread_write(int* sockfd) {
     char buffer[256];
     int n;
 
-    for (;;) {
+    do {
         printf("Please enter the message: ");
 
         bzero(buffer, 256);
         fgets(buffer, 255, stdin);
-
-        printf("Enviando: %s...\n", buffer);
         
         n = write(*sockfd, buffer, strlen(buffer));
 
         if (n < 0) {
             error("ERROR writing to socket");
         }
+    } while (not_bye(buffer, strlen(buffer)));
+}
+
+int not_bye(char* msg, int len_msg) {
+
+    // Remove o carriage return.
+    if (len_msg > 0 && (msg[len_msg - 1] == '\n' || msg[len_msg - 1] == '\r')) {
+        msg[len_msg - 1] = '\0';
     }
+
+    if (len_msg > 1 && msg[len_msg - 2] == '\r') {
+        msg[len_msg - 2] = '\0';
+    }
+    // --
+
+    for (int i = 0; i < len_msg; i++)
+    {
+        msg[i] = tolower(msg[i]);
+    }
+
+    return strcmp(msg, "bye");
 }
 
 void thread_read(int* sockfd) {
@@ -113,6 +132,6 @@ void thread_read(int* sockfd) {
             error("ERROR reading from socket");
         }
 
-        printf("%s\n", buffer);
+        printf("\n\n%s\n\n", buffer);
     }
 }
