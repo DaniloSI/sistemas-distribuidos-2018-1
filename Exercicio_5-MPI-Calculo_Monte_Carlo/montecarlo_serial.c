@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/time.h>
 #include <time.h>
 
 /**
@@ -13,22 +14,19 @@ int inside_circle(double x, double y) {
     return sqrt((x*x) + (y*y)) <= 1.0;
 }
 
+double get_rand_num() {
+    struct timeval te;
+    gettimeofday(&te, NULL);
+    srand((unsigned)time(NULL) + te.tv_usec);
+    return (double)(rand() % 10000001) / (double)10000001;
+}
+
 double montecarlo(int npoints) {
     int i, circle_count = 0;
 
-    srand(time(NULL));
-
     for (i = 0; i < npoints; i++) {
-        double y = rand();
-        double x = rand();
-
-        while (x > 1.0) {
-            x *= 0.1;
-        }
-
-        while (y > 1.0) {
-            y *= 0.1;
-        }
+        double y = get_rand_num();
+        double x = get_rand_num();
 
         if (inside_circle(x, y)) {
             circle_count++;
